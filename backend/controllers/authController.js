@@ -1,6 +1,5 @@
-// controllers/userController.js
-const User = require('../models/User');
-const generateToken = require('../utils/generateToken');
+const User = require('../models/User'); // Ensure this path is correct
+const generateToken = require('../utils/generateToken'); // Ensure this path is correct
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -25,7 +24,7 @@ const authUser = async (req, res) => {
 };
 
 // @desc    Register a new user
-// @route   POST /api/users/register
+// @route   POST /api/users
 // @access  Public
 const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
