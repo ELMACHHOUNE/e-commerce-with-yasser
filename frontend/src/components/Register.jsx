@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Ensure you have installed Axios
 import logo from '/assets/Sign-up.webp';
 
 const Register = () => {
@@ -12,7 +13,7 @@ const Register = () => {
     navigate('/login');
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.target;
     const firstName = form.firstName.value.trim();
@@ -21,29 +22,46 @@ const Register = () => {
     const password = form.password.value.trim();
     const confirmPassword = form.confirmPassword.value.trim();
 
+    // Clear previous messages
+    setError(null);
+    setSuccess(null);
+
+    // Basic validation
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       setError('Please fill out all required fields.');
-      setSuccess(null);
       return;
     }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
-      setSuccess(null);
       return;
     }
 
-    // Simulate successful registration
-    setError(null);
-    setSuccess('Your account has been created successfully.');
+    try {
+      // Call the registration API (adjust the URL according to your backend)
+      const response = await axios.post('http://localhost:5000/api/auth/register', {
+        firstName,
+        lastName,
+        email,
+        password,
+      });
 
-    // Further form submission logic can be added here
+      if (response.data.success) {
+        setSuccess('Your account has been created successfully.');
+        // Optionally redirect to login after successful registration
+        navigate('/login');
+      } else {
+        setError(response.data.message || 'Registration failed. Please try again.');
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again later.');
+      console.error(err);
+    }
   };
 
   return (
     <section className="relative bg-white">
       <div className="lg:grid lg:min-h-screen lg:grid-cols-12">
-        {/* Background Section */}
         <section className="relative flex h-32 items-end bg-gray-900 lg:col-span-5 lg:h-full xl:col-span-6">
           <img
             alt="Background"
@@ -60,11 +78,10 @@ const Register = () => {
           </div>
         </section>
 
-        {/* Form Section */}
         <main className="flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-6">
-          <div className="max-w-lg w-full"> {/* Adjusted container width */}
+          <div className="max-w-lg w-full">
             {success && (
-              <div role="alert" className="rounded-xl border border-gray-100 bg-white p-4 mb-4">
+              <div role="alert" aria-live="assertive" className="rounded-xl border border-gray-100 bg-white p-4 mb-4">
                 <div className="flex items-start gap-4">
                   <span className="text-green-600">
                     <svg
@@ -87,7 +104,7 @@ const Register = () => {
                     <p className="mt-1 text-sm text-gray-700">{success}</p>
                   </div>
                   <button
-                    onClick={() => setSuccess(null)}  // Close the success message
+                    onClick={() => setSuccess(null)}
                     className="text-gray-500 transition hover:text-gray-600"
                   >
                     <span className="sr-only">Dismiss popup</span>
@@ -107,7 +124,7 @@ const Register = () => {
             )}
 
             {error && (
-              <div role="alert" className="rounded-xl border border-red-100 bg-red-50 p-4 mb-4">
+              <div role="alert" aria-live="assertive" className="rounded-xl border border-red-100 bg-red-50 p-4 mb-4">
                 <div className="flex items-start gap-4">
                   <span className="text-red-600">
                     <svg
@@ -130,7 +147,7 @@ const Register = () => {
                     <p className="mt-1 text-sm text-red-700">{error}</p>
                   </div>
                   <button
-                    onClick={() => setError(null)}  // Close the error message
+                    onClick={() => setError(null)}
                     className="text-red-500 transition hover:text-red-600"
                   >
                     <span className="sr-only">Dismiss popup</span>
@@ -218,22 +235,21 @@ const Register = () => {
               <div className="col-span-6">
                 <button
                   type="submit"
-                  className="inline-block w-full rounded-lg bg-gray-900 px-12 py-3 text-sm font-medium text-white shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all duration-300 ease-in-out"
+                  className="w-full py-3 px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all duration-300 ease-in-out"
                 >
                   Sign Up
                 </button>
               </div>
             </form>
 
-            <p className="mt-6 text-center text-sm text-gray-500">
+            <p className="mt-4 text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <a
-                href="/login"
-                className="font-medium text-gray-900 hover:text-gray-700"
+              <button
                 onClick={handleLoginRedirect}
+                className="text-blue-600 hover:text-blue-500 font-semibold"
               >
-                Log in
-              </a>
+                Log In
+              </button>
             </p>
           </div>
         </main>

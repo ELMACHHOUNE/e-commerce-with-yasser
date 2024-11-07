@@ -15,6 +15,7 @@ const Login = () => {
 
   const handleDismiss = () => {
     setSuccess(null);
+    setError(null); // Ensure both are cleared when dismissing
   };
 
   const handleSubmit = async (event) => {
@@ -23,29 +24,31 @@ const Login = () => {
     const email = form.email.value.trim();
     const password = form.password.value.trim();
 
+    // Clear messages on form submission
+    setError(null);
+    setSuccess(null);
+
     if (!email || !password) {
       setError('Please fill out all required fields.');
-      setSuccess(null);
       return;
     }
 
     try {
-      const data = await authService.login(email, password);
-      setError(null);
+      const { token, isAdmin } = await authService.login(email, password);
+      // Set success message on successful login
       setSuccess('Successfully logged in.');
 
       // Store the token in local storage (or session storage for temporary sessions)
-      localStorage.setItem('token', data.token); // Assuming `data.token` is the JWT
+      localStorage.setItem('token', token); // Assuming `token` is the JWT
 
-      // Check if the user is an admin and navigate accordingly
-      if (data.isAdmin) {
+      // Navigate to the appropriate route based on user role
+      if (isAdmin) {
         navigate('/admin'); // Admin dashboard route
       } else {
         navigate('/'); // Regular user route (home page)
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred during login.');
-      setSuccess(null);
+      setError(err.message || 'An error occurred during login.');
     }
   };
 
@@ -70,6 +73,7 @@ const Login = () => {
 
         <main className="flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-6">
           <div className="max-w-lg w-full">
+            {/* Success Message */}
             {success && (
               <div role="alert" className="rounded-xl border border-gray-100 bg-white p-4 mb-4">
                 <div className="flex items-start gap-4">
@@ -110,6 +114,7 @@ const Login = () => {
               </div>
             )}
 
+            {/* Error Message */}
             {error && (
               <div role="alert" className="rounded-xl border border-red-100 bg-red-50 p-4 mb-4">
                 <div className="flex items-start gap-4">
@@ -133,7 +138,7 @@ const Login = () => {
                     <strong className="block font-medium text-gray-900"> Something went wrong </strong>
                     <p className="mt-1 text-sm text-red-700">{error}</p>
                   </div>
-                  <button className="text-red-500 transition hover:text-red-600">
+                  <button className="text-red-500 transition hover:text-red-600" onClick={handleDismiss}>
                     <span className="sr-only">Dismiss popup</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -161,6 +166,7 @@ const Login = () => {
                   name="email"
                   className="mt-1 w-full rounded-md border border-gray-300 bg-white text-base text-gray-700 py-3 px-4 shadow-sm placeholder-gray-500 focus:border-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50 transition-all duration-300 ease-in-out"
                   placeholder="Enter email"
+                  onChange={() => setError(null)} // Clear error when user starts typing
                   required
                 />
               </div>
@@ -175,6 +181,7 @@ const Login = () => {
                   name="password"
                   className="mt-1 w-full rounded-md border border-gray-300 bg-white text-base text-gray-700 py-3 px-4 shadow-sm placeholder-gray-500 focus:border-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50 transition-all duration-300 ease-in-out"
                   placeholder="Enter password"
+                  onChange={() => setError(null)} // Clear error when user starts typing
                   required
                 />
               </div>
@@ -192,7 +199,7 @@ const Login = () => {
             <p className="mt-6 text-center text-sm text-gray-500">
               No account?{' '}
               <a href="/register" className="font-medium text-gray-900 hover:text-gray-700" onClick={handleRegisterRedirect}>
-                Sign up
+                Register
               </a>
             </p>
           </div>

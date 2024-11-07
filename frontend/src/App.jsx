@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Home from "./components/Home";
 import Products from "./components/Products";
 import Categories from "./components/Categories";
@@ -20,9 +20,18 @@ import AdminProducts from "./components/admin/AdminProducts";
 import AdminUsers from "./components/admin/AdminUsers";
 import AdminOrders from "./components/admin/AdminOrders";
 
-
 const App = () => {
   const [cart, setCart] = useState([]);
+  const [user, setUser] = useState(null); // User state for login status
+
+  // Fetch user state from localStorage if exists on initial load
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      // Here you can call an API to validate the token and set the user
+      setUser({ token: storedToken, role: 'admin' }); // Replace with actual user data
+    }
+  }, []);
 
   const addToCart = (product) => {
     setCart((prev) => {
@@ -55,6 +64,14 @@ const App = () => {
     );
   };
 
+  // Protecting admin routes
+  const ProtectedAdminRoute = ({ children }) => {
+    if (!user || user.role !== "admin") {
+      return <Navigate to="/login" />;
+    }
+    return children;
+  };
+
   return (
     <Router>
       <Navbar
@@ -70,33 +87,17 @@ const App = () => {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products addToCart={addToCart} />} />
-          <Route
-            path="/products/category/:category"
-            element={<ProductsByCategory addToCart={addToCart} />}
-          />
-          <Route
-            path="/view-product/:productId"
-            element={<ViewProduct addToCart={addToCart} />}
-          />
+          <Route path="/products/category/:category" element={<ProductsByCategory addToCart={addToCart} />} />
+          <Route path="/view-product/:productId" element={<ViewProduct addToCart={addToCart} />} />
           <Route path="/categories" element={<Categories />} />
-          <Route
-            path="/cart"
-            element={
-              <Cart
-                cart={cart}
-                removeFromCart={removeFromCart}
-                clearCart={clearCart}
-                updateCart={updateCart}
-              />
-            }
-          />
-          <Route path="/login" element={<Login />} />
+          <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} updateCart={updateCart} />} />
+          <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/register" element={<Registration />} />
           <Route path="/learn-more" element={<LearnMore />} />
           <Route path="*" element={<ErrorPage />} />
 
           {/* Admin Routes */}
-          <Route path="/admin/*" element={<AdminDashboard />}>
+          <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>}>
             <Route path="products" element={<AdminProducts />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="orders" element={<AdminOrders />} />

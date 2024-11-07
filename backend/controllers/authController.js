@@ -3,29 +3,36 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User'); // Ensure this is the correct path
 
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' });
+    // Input validation (can be more complex)
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: 'Please fill out all required fields.' });
     }
 
+    // Check if the email is already taken
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'Email is already in use.' });
+    }
+
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create the new user
     const newUser = new User({
-      name,
+      firstName,
+      lastName,
       email,
-      password: hashedPassword,
-      role: role || 'user' // Default role to 'user' if not provided
+      password: hashedPassword
     });
 
     await newUser.save();
-    res.status(201).json({ message: 'User registered successfully', user: newUser });
 
+    res.status(201).json({ message: 'Registration successful', user: newUser });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -43,9 +50,15 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    res.status(200).json({ message: 'Login successful', user });
+    // Include the user's role in the response
+    res.status(200).json({
+      message: 'Login successful',
+      user,
+      role: user.role // Send the role (admin or user)
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+

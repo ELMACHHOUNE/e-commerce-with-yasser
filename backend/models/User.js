@@ -3,10 +3,19 @@ const bcrypt = require('bcryptjs');
 
 // Define the user schema
 const userSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+  },
   email: {
     type: String,
     required: true,
     unique: true,
+    lowercase: true, // Ensure emails are case-insensitive
   },
   password: {
     type: String,
@@ -17,11 +26,12 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user',
   },
-});
+}, { timestamps: true }); // This adds createdAt and updatedAt fields automatically
 
 // Hash the password before saving to the database
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next(); // Only hash the password if it's new or modified
+  // Only hash the password if it's new or modified
+  if (!this.isModified('password')) return next();
 
   try {
     const salt = await bcrypt.genSalt(10); // Generate a salt
@@ -31,6 +41,11 @@ userSchema.pre('save', async function (next) {
     next(err);
   }
 });
+
+// Method to compare password (for login)
+userSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 // Create the User model
 const User = mongoose.model('User', userSchema);
