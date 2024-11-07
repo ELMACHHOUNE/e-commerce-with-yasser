@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
 import logo from '/assets/Mobile-login.webp';
 
 const Login = () => {
@@ -16,7 +17,7 @@ const Login = () => {
     setSuccess(null);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.target;
     const email = form.email.value.trim();
@@ -28,14 +29,29 @@ const Login = () => {
       return;
     }
 
-    setError(null);
-    setSuccess('Successfully logged in.');
+    try {
+      const data = await authService.login(email, password);
+      setError(null);
+      setSuccess('Successfully logged in.');
+
+      // Store the token in local storage (or session storage for temporary sessions)
+      localStorage.setItem('token', data.token); // Assuming `data.token` is the JWT
+
+      // Check if the user is an admin and navigate accordingly
+      if (data.isAdmin) {
+        navigate('/admin'); // Admin dashboard route
+      } else {
+        navigate('/'); // Regular user route (home page)
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'An error occurred during login.');
+      setSuccess(null);
+    }
   };
 
   return (
     <section className="relative bg-white">
       <div className="lg:grid lg:min-h-screen lg:grid-cols-12">
-        {/* Background Section */}
         <section className="relative flex h-32 items-end bg-gray-900 lg:col-span-5 lg:h-full xl:col-span-6">
           <img
             alt="Background"
@@ -52,9 +68,8 @@ const Login = () => {
           </div>
         </section>
 
-        {/* Form Section */}
         <main className="flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-6">
-          <div className="max-w-lg w-full"> {/* Adjusted container width */}
+          <div className="max-w-lg w-full">
             {success && (
               <div role="alert" className="rounded-xl border border-gray-100 bg-white p-4 mb-4">
                 <div className="flex items-start gap-4">
@@ -78,10 +93,7 @@ const Login = () => {
                     <strong className="block font-medium text-gray-900"> Success </strong>
                     <p className="mt-1 text-sm text-gray-700">{success}</p>
                   </div>
-                  <button
-                    className="text-gray-500 transition hover:text-gray-600"
-                    onClick={handleDismiss}
-                  >
+                  <button className="text-gray-500 transition hover:text-gray-600" onClick={handleDismiss}>
                     <span className="sr-only">Dismiss popup</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -139,7 +151,6 @@ const Login = () => {
             )}
 
             <form onSubmit={handleSubmit} className="mt-8 grid grid-cols-6 gap-6">
-              {/* Email Input */}
               <div className="col-span-6">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email Address
@@ -154,7 +165,6 @@ const Login = () => {
                 />
               </div>
 
-              {/* Password Input */}
               <div className="col-span-6">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
@@ -169,7 +179,6 @@ const Login = () => {
                 />
               </div>
 
-              {/* Submit Button */}
               <div className="col-span-6">
                 <button
                   type="submit"
@@ -180,14 +189,9 @@ const Login = () => {
               </div>
             </form>
 
-            {/* Registration Link */}
             <p className="mt-6 text-center text-sm text-gray-500">
               No account?{' '}
-              <a
-                href="/register"
-                className="font-medium text-gray-900 hover:text-gray-700"
-                onClick={handleRegisterRedirect}
-              >
+              <a href="/register" className="font-medium text-gray-900 hover:text-gray-700" onClick={handleRegisterRedirect}>
                 Sign up
               </a>
             </p>
