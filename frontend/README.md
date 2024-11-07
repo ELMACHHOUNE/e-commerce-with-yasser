@@ -1,3 +1,4 @@
+wait wait i will send you the shema of my frontend project : 
 
 the front-end
 testpractices (Root Directory)
@@ -29,8 +30,20 @@ testpractices (Root Directory)
 │   │   ├── Register.jsx            # Registration form component
 │   │   ├── ScrollToTopButton.jsx   # Button to scroll back to top
 │   │   └── Viewproduct.jsx         # Detailed view of a single product
+│   ├── pages/admin         
+│   │    │   ├── AdminDashboard.jsx 
+│   │    │   ├── AdminRoutes.jsx 
+│   │    │   ├── OrderManagement.jsx 
+│   │    │   ├── ProductsManagement.jsx 
+│   │    │   └── UserManagement.jsx 
+│   ├── services
+│   │   ├── AuthContext.js 
+│   │   └── authService.js
+│   ├── utils
+│   │   └── axioslnstance.js
 │   │
-│   ├── App.jsx              # Root component of the application
+│   │
+├── App.jsx              # Root component of the application
 │   └── main.jsx             # Entry point for React app
 │
 ├── .gitignore               # Files and directories to ignore in Git
@@ -42,34 +55,4 @@ testpractices (Root Directory)
 ├── README.md                # Project documentation
 ├── tailwind.config.js       # Tailwind CSS configuration
 ├── vercel.json              # Vercel deployment configuration
-└── vite.config.js           # Vite bundler configuration
-
-
-
-
-the back-end
-
-your-project/
-│
-├── controllers/
-│   ├── authController.js         // New
-│   ├── productController.js
-│   └── otherControllers.js        // Existing controllers
-│
-├── models/
-│   ├── User.js                   // New
-│   ├── Product.js
-│   └── otherModels.js            // Existing models
-│
-├── routes/
-│   ├── authRoutes.js             // New
-│   ├── productRoutes.js
-│   └── otherRoutes.js            // Existing routes
-│
-├── middleware/
-│   ├── authMiddleware.js          // New
-│   └── otherMiddleware.js         // Existing middleware
-│
-├── .env
-├── server.js
-└── package.json
+└── vite.config.js           # Vite bundler configuration│
